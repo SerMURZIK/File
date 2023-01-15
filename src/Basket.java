@@ -18,7 +18,7 @@ public class Basket {
 
     public void addToCartSerial(int productNum, int amount) {
         products[productNum].addAmount(amount);
-        saveTxt(fileSerial);
+        saveBin(fileSerial);
     }
 
     public void printCart() {
@@ -73,7 +73,6 @@ public class Basket {
                 for (int i = 0; i < arrForGiveSplittedResultToMainArr.length; i++) {
                     products[Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[0])].setAmount(Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[1]));
                 }
-
             }
             inputStream.close();
         } catch (Exception e) {
@@ -83,20 +82,12 @@ public class Basket {
     }
 
     public void saveBin(File file) {
-        int adjustmentOfSpace = 0;
         try {
             FileOutputStream fos = new FileOutputStream(file);
-            for (Product product : products) {
-                String message = product.getIndex() + "-" + product.getAmount();
-                if (adjustmentOfSpace >= 0 && products.length > 1 && adjustmentOfSpace != products.length) {
-                    fos.write((message + " ").getBytes());
-                }
-                if (adjustmentOfSpace == products.length) {
-                    fos.write((message).getBytes());
-                }
-                adjustmentOfSpace++;
-            }
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(this);
             fos.close();
+            oos.close();
         } catch (Exception e) {
             System.err.println("ERROR");
             System.out.println(e.getMessage());
@@ -104,26 +95,16 @@ public class Basket {
     }
 
     public static Basket loadFromBinFile(File file) {
+        Basket basket = new Basket(products);
         try {
             FileInputStream fis = new FileInputStream(file);
-            int current;
-            StringBuilder sb = new StringBuilder();
-            while ((current = fis.read()) != -1) {
-                sb.append(Character.toChars(current));
-            }
-            String result = sb.toString();
-            String[] arrForGiveSplittedResultToMainArr = result.split(" ");
-            if (arrForGiveSplittedResultToMainArr.length > 1) {
-                for (int i = 0; i < arrForGiveSplittedResultToMainArr.length; i++) {
-                    products[Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[0])].setAmount(Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[1]));
-                }
-
-            }
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            basket = (Basket) ois.readObject();
+            ois.close();
             fis.close();
         } catch (Exception e) {
-            System.err.println("ERROR");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
         }
-        return new Basket(products);
+        return basket;
     }
 }
