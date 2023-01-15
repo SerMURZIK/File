@@ -1,8 +1,9 @@
 import java.io.*;
 
 public class Basket {
-    private static Product[] products = new Product[3];
-    private static File file = new File("src/Files", "basket.txt");
+    private static final Product[] products = new Product[3];
+    private static final File fileMain = new File("src/Files", "basket.txt");
+    private static final File fileSerial = new File("src/Files", "basket.bin");
 
     public Basket(Product[] products) {
         Basket.products[0] = products[0];
@@ -10,9 +11,14 @@ public class Basket {
         Basket.products[2] = products[2];
     }
 
-    public void addToCart(int productNum, int amount) {
+    public void addToCartMain(int productNum, int amount) {
         products[productNum].addAmount(amount);
-        saveTxt(file);
+        saveTxt(fileMain);
+    }
+
+    public void addToCartSerial(int productNum, int amount) {
+        products[productNum].addAmount(amount);
+        saveTxt(fileSerial);
     }
 
     public void printCart() {
@@ -72,6 +78,51 @@ public class Basket {
             inputStream.close();
         } catch (Exception e) {
             System.err.println(e.getMessage());
+        }
+        return new Basket(products);
+    }
+
+    public void saveBin(File file) {
+        int adjustmentOfSpace = 0;
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            for (Product product : products) {
+                String message = product.getIndex() + "-" + product.getAmount();
+                if (adjustmentOfSpace >= 0 && products.length > 1 && adjustmentOfSpace != products.length) {
+                    fos.write((message + " ").getBytes());
+                }
+                if (adjustmentOfSpace == products.length) {
+                    fos.write((message).getBytes());
+                }
+                adjustmentOfSpace++;
+            }
+            fos.close();
+        } catch (Exception e) {
+            System.err.println("ERROR");
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static Basket loadFromBinFile(File file) {
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            int current;
+            StringBuilder sb = new StringBuilder();
+            while ((current = fis.read()) != -1) {
+                sb.append(Character.toChars(current));
+            }
+            String result = sb.toString();
+            String[] arrForGiveSplittedResultToMainArr = result.split(" ");
+            if (arrForGiveSplittedResultToMainArr.length > 1) {
+                for (int i = 0; i < arrForGiveSplittedResultToMainArr.length; i++) {
+                    products[Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[0])].setAmount(Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[1]));
+                }
+
+            }
+            fis.close();
+        } catch (Exception e) {
+            System.err.println("ERROR");
+            System.out.println(e.getMessage());
         }
         return new Basket(products);
     }

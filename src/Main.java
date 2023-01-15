@@ -10,11 +10,12 @@ public class Main {
         Product bread = new Product("Хлеб", 50, 1);
         Product crisps = new Product("Чипсы", 200, 2);
         Product[] products = {milk, bread, crisps};
-        File file = new File("src/Files", "basket.txt");
+        File fileMain = new File("src/Files", "basket.txt");
+        File fileSerial = new File("src/Files", "basket.bin");
 
         Basket basket = new Basket(products);
         try {
-            basket = Basket.loadFromTxtFile(file);
+            basket = Basket.loadFromBinFile(fileSerial);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -42,7 +43,7 @@ public class Main {
                 for (Product product : products) {
                     product.setAmount(0);
                 }
-                basket.saveTxt(file);
+                basket.saveTxt(fileSerial);
                 continue;
             }
             parts = checkEnd.split(" ");
@@ -62,7 +63,7 @@ public class Main {
             }
             try {
                 products[numberOfProduct].addAmount(amountOfProducts);
-                basket.addToCart(numberOfProduct, amountOfProducts);
+                basket.addToCartSerial(numberOfProduct, amountOfProducts);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
