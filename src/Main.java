@@ -14,11 +14,11 @@ public class Main {
         File fileSerial = new File("src/Files", "basket.bin");
 
         Basket basket = new Basket(products);
-       /* try {
+        try {
             basket = Basket.loadFromBinFile(fileSerial);
         } catch (Exception e) {
             System.err.println(e.getMessage());
-        }*/
+        }
 
         String checkEnd;
         String[] parts;
