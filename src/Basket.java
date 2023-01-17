@@ -1,19 +1,13 @@
 import java.io.*;
 
-public class Basket {
-    private static final Product[] products = new Product[3];
-    private static final File fileMain = new File("src/Files", "basket.txt");
+public class Basket implements Serializable {
+    private final Product[] products = new Product[3];
     private static final File fileSerial = new File("src/Files", "basket.bin");
 
     public Basket(Product[] products) {
-        Basket.products[0] = products[0];
-        Basket.products[1] = products[1];
-        Basket.products[2] = products[2];
-    }
-
-    public void addToCartMain(int productNum, int amount) {
-        products[productNum].addAmount(amount);
-        saveTxt(fileMain);
+        this.products[0] = products[0];
+        this.products[1] = products[1];
+        this.products[2] = products[2];
     }
 
     public void addToCartSerial(int productNum, int amount) {
@@ -38,49 +32,6 @@ public class Basket {
         }
     }
 
-    public void saveTxt(File textFile) {
-        int adjustmentOfSpace = 0;
-        try {
-            OutputStream outputStream = new FileOutputStream(textFile);
-            for (Product product : products) {
-                String message = product.getIndex() + "-" + product.getAmount();
-                if (adjustmentOfSpace >= 0 && products.length > 1 && adjustmentOfSpace != products.length) {
-                    outputStream.write((message + " ").getBytes());
-                }
-                if (adjustmentOfSpace == products.length) {
-                    outputStream.write((message).getBytes());
-                }
-                adjustmentOfSpace++;
-            }
-            outputStream.close();
-        } catch (Exception e) {
-            System.err.println("ERROR");
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public static Basket loadFromTxtFile(File textFile) {
-        try {
-            InputStream inputStream = new FileInputStream(textFile);
-            int current;
-            StringBuilder sb = new StringBuilder();
-            while ((current = inputStream.read()) != -1) {
-                sb.append(Character.toChars(current));
-            }
-            String result = sb.toString();
-            String[] arrForGiveSplittedResultToMainArr = result.split(" ");
-            if (arrForGiveSplittedResultToMainArr.length > 1) {
-                for (int i = 0; i < arrForGiveSplittedResultToMainArr.length; i++) {
-                    products[Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[0])].setAmount(Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[1]));
-                }
-            }
-            inputStream.close();
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
-        return new Basket(products);
-    }
-
     public void saveBin(File file) {
         try {
             FileOutputStream fos = new FileOutputStream(file);
@@ -94,7 +45,7 @@ public class Basket {
         }
     }
 
-    public static Basket loadFromBinFile(File file) {
+    public static Basket loadFromBinFile(File file, Product[] products) {
         Basket basket = new Basket(products);
         try {
             FileInputStream fis = new FileInputStream(file);
@@ -106,5 +57,9 @@ public class Basket {
             System.err.println(e.getMessage());
         }
         return basket;
+    }
+
+    public Product getProduct(int index) {
+        return products[index];
     }
 }
