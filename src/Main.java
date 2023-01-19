@@ -1,10 +1,9 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Product milk = new Product("Молко", 125, 0);
         Product bread = new Product("Хлеб", 50, 1);
