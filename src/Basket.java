@@ -34,8 +34,7 @@ public class Basket {
 
     public void saveTxt(File textFile) {
         int adjustmentOfSpace = 0;
-        try {
-            OutputStream outputStream = new FileOutputStream(textFile);
+        try (OutputStream outputStream = new FileOutputStream(textFile)) {
             for (Product product : products) {
                 String message = product.getIndex() + "-" + product.getAmount();
                 if (adjustmentOfSpace >= 0 && products.length > 1 && adjustmentOfSpace != products.length) {
@@ -54,8 +53,7 @@ public class Basket {
     }
 
     public static Basket loadFromTxtFile(File textFile) {
-        try {
-            InputStream inputStream = new FileInputStream(textFile);
+        try (InputStream inputStream = new FileInputStream(textFile)) {
             int current;
             StringBuilder sb = new StringBuilder();
             while ((current = inputStream.read()) != -1) {
