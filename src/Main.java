@@ -1,21 +1,23 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Product milk = new Product("Молко", 125, 0);
         Product bread = new Product("Хлеб", 50, 1);
         Product crisps = new Product("Чипсы", 200, 2);
         Product[] products = {milk, bread, crisps};
-        File file = new File("src/Files", "basket.txt");
+        File fileTxt = new File("src/Files", "basket.txt");
+        File fileJson = new File("src/Files", "basket.json");
+        File fileCSV = new File("src/Files", "basket.json");
 
         Basket basket = new Basket(products);
         try {
-            basket = Basket.loadFromTxtFile(file);
+            basket = Basket.loadJson(fileJson, products);
         } catch (Exception e) {
+            System.err.println("load err");
             System.err.println(e.getMessage());
         }
 
@@ -42,7 +44,7 @@ public class Main {
                 for (Product product : products) {
                     product.setAmount(0);
                 }
-                basket.saveTxt(file);
+                basket.saveJson(fileJson);
                 continue;
             }
             parts = checkEnd.split(" ");
@@ -61,7 +63,7 @@ public class Main {
                 continue;
             }
             try {
-                basket.addToCart(numberOfProduct, amountOfProducts);
+                basket.addToCartJson(numberOfProduct, amountOfProducts, fileJson);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

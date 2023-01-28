@@ -1,18 +1,33 @@
-import java.io.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
-public class Basket {
-    private static Product[] products = new Product[3];
-    private static File file = new File("src/Files", "basket.txt");
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Basket implements Serializable {
+    private Product[] products = new Product[3];
+    private ClientLog clientLog = new ClientLog();
 
     public Basket(Product[] products) {
-        Basket.products[0] = products[0];
-        Basket.products[1] = products[1];
-        Basket.products[2] = products[2];
+        this.products[0] = products[0];
+        this.products[1] = products[1];
+        this.products[2] = products[2];
     }
 
-    public void addToCart(int productNum, int amount) {
+    public void addToCartTxt(int productNum, int amount, File file, Product[] products) {
         products[productNum].addAmount(amount);
+        clientLog.log(productNum, amount);
+        clientLog.exportAsCSV();
         saveTxt(file);
+    }
+
+    public void addToCartJson(int productNum, int amount, File file) {
+        products[productNum].addAmount(amount);
+        clientLog.log(productNum, amount);
+        clientLog.exportAsCSV();
+        saveJson(file);
     }
 
     public void printCart() {
@@ -45,14 +60,42 @@ public class Basket {
                 }
                 adjustmentOfSpace++;
             }
-            outputStream.close();
         } catch (Exception e) {
             System.err.println("ERROR");
             System.out.println(e.getMessage());
         }
     }
 
-    public static Basket loadFromTxtFile(File textFile) {
+    public void saveJson(File fileJson) {
+        try (FileWriter file = new FileWriter(fileJson)) {
+            JSONObject obj = new JSONObject();
+            for (Product product : products) {
+                obj.put(product.getIndex(), product.getAmount());
+            }
+            file.write(obj.toJSONString());
+            file.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Basket loadJson(File jsonFile, Product[] products) {
+        JSONParser parser = new JSONParser();
+        try {
+            JSONObject jsonObject = (JSONObject) parser.parse(new FileReader(jsonFile));
+            int i = 0;
+            for (Product product : products) {
+                product.setAmount(jsonObject.get(Integer.toString(i)));
+                i++;
+            }
+        } catch (Exception e) {
+            System.err.println("loadJson err");
+            System.err.println(e.getMessage());
+        }
+        return new Basket(products);
+    }
+
+    public static Basket loadFromTxtFile(File textFile, Product[] products) {
         try (InputStream inputStream = new FileInputStream(textFile)) {
             int current;
             StringBuilder sb = new StringBuilder();
@@ -65,9 +108,7 @@ public class Basket {
                 for (int i = 0; i < arrForGiveSplittedResultToMainArr.length; i++) {
                     products[Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[0])].setAmount(Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[1]));
                 }
-
             }
-            inputStream.close();
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }

@@ -1,7 +1,7 @@
 public class Product {
     private String title;
     private int price;
-    private int amount;
+    private long amount;
     private int index;
 
     public Product(String title, int price, int index) {
@@ -30,7 +30,7 @@ public class Product {
     }
 
     public int getAmount() {
-        return amount;
+        return (int) amount;
     }
 
     public void setTitle(String title) {
@@ -39,5 +39,9 @@ public class Product {
 
     public void setAmount(int count) {
         this.amount = count;
+    }
+
+    public void setAmount(Object count) {
+        this.amount = (long) count;
     }
 }
