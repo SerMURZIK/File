@@ -1,14 +1,9 @@
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Basket implements Serializable {
-    private Product[] products = new Product[3];
-    private ClientLog clientLog = new ClientLog();
+    public Product[] products = new Product[3];
 
     public Basket(Product[] products) {
         this.products[0] = products[0];
@@ -18,15 +13,12 @@ public class Basket implements Serializable {
 
     public void addToCartTxt(int productNum, int amount, File file, Product[] products) {
         products[productNum].addAmount(amount);
-        clientLog.log(productNum, amount);
-        clientLog.exportAsCSV();
+
         saveTxt(file);
     }
 
     public void addToCartJson(int productNum, int amount, File file) {
         products[productNum].addAmount(amount);
-        clientLog.log(productNum, amount);
-        clientLog.exportAsCSV();
         saveJson(file);
     }
 
@@ -68,31 +60,27 @@ public class Basket implements Serializable {
 
     public void saveJson(File fileJson) {
         try (FileWriter file = new FileWriter(fileJson)) {
-            JSONObject obj = new JSONObject();
-            for (Product product : products) {
-                obj.put(product.getIndex(), product.getAmount());
-            }
-            file.write(obj.toJSONString());
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            file.write(gson.toJson(new Basket(products)));
             file.flush();
         } catch (IOException e) {
+            System.out.println("saveJson err");
             e.printStackTrace();
         }
     }
 
     public static Basket loadJson(File jsonFile, Product[] products) {
-        JSONParser parser = new JSONParser();
-        try {
-            JSONObject jsonObject = (JSONObject) parser.parse(new FileReader(jsonFile));
-            int i = 0;
-            for (Product product : products) {
-                product.setAmount(jsonObject.get(Integer.toString(i)));
-                i++;
-            }
+        Basket basket = null;
+        try (FileReader reader = new FileReader(jsonFile)) {
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            basket = gson.fromJson(reader, Basket.class);
         } catch (Exception e) {
             System.err.println("loadJson err");
             System.err.println(e.getMessage());
         }
-        return new Basket(products);
+        return basket;
     }
 
     public static Basket loadFromTxtFile(File textFile, Product[] products) {

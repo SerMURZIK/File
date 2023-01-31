@@ -12,8 +12,8 @@ public class Main {
         File fileTxt = new File("src/Files", "basket.txt");
         File fileJson = new File("src/Files", "basket.json");
         File fileCSV = new File("src/Files", "basket.json");
-
         Basket basket = new Basket(products);
+        ClientLog clientLog = new ClientLog();
         try {
             basket = Basket.loadJson(fileJson, products);
         } catch (Exception e) {
@@ -43,6 +43,7 @@ public class Main {
             if (checkEnd.equalsIgnoreCase("clean")) {
                 for (Product product : products) {
                     product.setAmount(0);
+                    basket.addToCartJson(product.getIndex(), product.getAmount(), fileJson);
                 }
                 basket.saveJson(fileJson);
                 continue;
@@ -64,8 +65,11 @@ public class Main {
             }
             try {
                 basket.addToCartJson(numberOfProduct, amountOfProducts, fileJson);
+                clientLog.log(numberOfProduct, amountOfProducts);
+                clientLog.exportAsCSV();
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.err.println("save in Main err");
+                System.err.println(e.getMessage());
             }
 
         }
