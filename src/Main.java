@@ -12,16 +12,21 @@ public class Main {
         File fileTxt = new File("src/Files", "basket.txt");
         File fileJson = new File("src/Files", "basket.json");
         File fileCSV = new File("src/Files", "basket.json");
+        File fileXml = new File("src/Files", "shop.xml");
         Basket basket = new Basket(products);
         ClientLog clientLog = new ClientLog();
         try {
-            basket = Basket.loadJson(fileJson, products);
+            basket = Basket.loadFromXmlFile(fileXml, products);
         } catch (Exception e) {
             System.err.println("load err");
             System.err.println(e.getMessage());
         }
 
-        String checkEnd;
+        if (basket == null) {
+            basket = new Basket(products);
+        }
+
+        String checkCase;
         String[] parts;
         int numberOfProduct;
         int amountOfProducts;
@@ -35,20 +40,24 @@ public class Main {
         System.out.println();
         while (true) {
             System.out.println();
-            System.out.println("Введите номер продукта и количество продуктов через пробел, или \"end\" или \"clean\"");
-            checkEnd = scanner.nextLine();
-            if (checkEnd.equalsIgnoreCase("End")) {
+            System.out.println("Введите номер продукта и количество продуктов через пробел или \"end\", или \"clean\", или \"show basket\".");
+            checkCase = scanner.nextLine();
+            if (checkCase.equalsIgnoreCase("End")) {
                 break;
             }
-            if (checkEnd.equalsIgnoreCase("clean")) {
+            if (checkCase.equalsIgnoreCase("clean")) {
                 for (Product product : products) {
                     product.setAmount(0);
-                    basket.addToCartJson(product.getIndex(), product.getAmount(), fileJson);
+                    basket.addToCartXml(product.getIndex(), product.getAmount(), fileXml);
                 }
-                basket.saveJson(fileJson);
+                basket.saveXml(fileXml);
                 continue;
             }
-            parts = checkEnd.split(" ");
+            if (checkCase.equalsIgnoreCase("show basket")) {
+                basket.printCart();
+                continue;
+            }
+            parts = checkCase.split(" ");
             numberOfProduct = Integer.parseInt(parts[0]) - 1;
             amountOfProducts = Integer.parseInt(parts[1]);
             if (parts.length != 2) {
@@ -64,7 +73,7 @@ public class Main {
                 continue;
             }
             try {
-                basket.addToCartJson(numberOfProduct, amountOfProducts, fileJson);
+                basket.addToCartXml(numberOfProduct, amountOfProducts, fileXml);
                 clientLog.log(numberOfProduct, amountOfProducts);
                 clientLog.exportAsCSV();
             } catch (Exception e) {

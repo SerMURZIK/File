@@ -1,5 +1,17 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 
 public class Basket implements Serializable {
@@ -13,13 +25,17 @@ public class Basket implements Serializable {
 
     public void addToCartTxt(int productNum, int amount, File file, Product[] products) {
         products[productNum].addAmount(amount);
-
         saveTxt(file);
     }
 
     public void addToCartJson(int productNum, int amount, File file) {
         products[productNum].addAmount(amount);
         saveJson(file);
+    }
+
+    public void addToCartXml(int productNum, int amount, File file) {
+        products[productNum].addAmount(amount);
+        saveXml(file);
     }
 
     public void printCart() {
@@ -37,6 +53,52 @@ public class Basket implements Serializable {
         } else {
             System.out.println("Карзина пуста");
         }
+    }
+
+    public void saveXml(File file) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.newDocument();
+            Element productXml = document.createElement("product");
+            document.appendChild(productXml);
+            for (Product product : products) {
+                Element basketElement = document.createElement("basket");
+                basketElement.setAttribute("product", Integer.toString(product.getAmount()));
+                productXml.appendChild(basketElement);
+            }
+
+            DOMSource domSource = new DOMSource(document);
+            StreamResult streamResult = new StreamResult(file);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.transform(domSource, streamResult);
+        } catch (Exception e) {
+            System.err.println("saveXml err");
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public static Basket loadFromXmlFile(File file, Product[] products) {
+        Basket basket = null;
+        String[] str = new String[10];
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(file);
+            NodeList nodeList = doc.getElementsByTagName("basket");
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (Node.ELEMENT_NODE == node.getNodeType()) {
+                    Element element = (Element) node;
+                    products[i].setAmount(Integer.parseInt(element.getAttribute("product")));
+                }
+            }
+            basket = new Basket(products);
+        } catch (Exception e) {
+            System.err.println("loadFromXmlFile err " + e.getMessage());
+        }
+        return basket;
     }
 
     public void saveTxt(File textFile) {
