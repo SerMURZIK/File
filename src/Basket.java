@@ -1,18 +1,23 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.*;
 
-public class Basket {
-    private static Product[] products = new Product[3];
-    private static File file = new File("src/Files", "basket.txt");
+public class Basket implements Serializable {
+    public Product[] products = new Product[3];
 
     public Basket(Product[] products) {
-        Basket.products[0] = products[0];
-        Basket.products[1] = products[1];
-        Basket.products[2] = products[2];
+        this.products[0] = products[0];
+        this.products[1] = products[1];
+        this.products[2] = products[2];
     }
 
-    public void addToCart(int productNum, int amount) {
+    public void addToCartTxt(int productNum, int amount, File file, Product[] products) {
         products[productNum].addAmount(amount);
         saveTxt(file);
+    }
+
+    public void addToCartJson(int productNum, int amount, File file) {
+        products[productNum].addAmount(amount);
     }
 
     public void printCart() {
@@ -45,14 +50,38 @@ public class Basket {
                 }
                 adjustmentOfSpace++;
             }
-            outputStream.close();
         } catch (Exception e) {
             System.err.println("ERROR");
             System.out.println(e.getMessage());
         }
     }
 
-    public static Basket loadFromTxtFile(File textFile) {
+    public void saveJson(File fileJson) {
+        try (FileWriter file = new FileWriter(fileJson)) {
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            file.write(gson.toJson(new Basket(products)));
+            file.flush();
+        } catch (IOException e) {
+            System.out.println("saveJson err");
+            e.printStackTrace();
+        }
+    }
+
+    public static Basket loadJson(File jsonFile, Product[] products) {
+        Basket basket = null;
+        try (FileReader reader = new FileReader(jsonFile)) {
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            basket = gson.fromJson(reader, Basket.class);
+        } catch (Exception e) {
+            System.err.println("loadJson err");
+            System.err.println(e.getMessage());
+        }
+        return basket;
+    }
+
+    public static Basket loadFromTxtFile(File textFile, Product[] products) {
         try (InputStream inputStream = new FileInputStream(textFile)) {
             int current;
             StringBuilder sb = new StringBuilder();
@@ -65,9 +94,7 @@ public class Basket {
                 for (int i = 0; i < arrForGiveSplittedResultToMainArr.length; i++) {
                     products[Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[0])].setAmount(Integer.parseInt(arrForGiveSplittedResultToMainArr[i].split("-")[1]));
                 }
-
             }
-            inputStream.close();
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
